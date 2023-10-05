@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Testez vote niveau en culture informatique" />
+
+  <title>Quiz Infos</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      background-image: url('fond.jpg');
+      background-size: cover;
+    }
+
+    #confetti-canvas {
+      position: fixed;
+      z-index: 999;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body class="h-screen flex flex-col items-center justify-center text-gray-800">
+  <canvas id="confetti-canvas"></canvas>
+  <div x-data="quizApp()" x-init="init()"
+    class="w-full max-w-xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden p-6">
+    <div class="w-full h-2 bg-green-200 overflow-hidden rounded-full mb-4">
+      <div :style="'width: ' + (currentQuestionIndex/questions.length)*100 + '%'" class="h-2 bg-green-500"></div>
+    </div>
+    <div class="px-4 py-2">
+      <h2 class="text-4xl text-center font-bold">Teste ton niveau en informatique !</h2>
+    </div>
+
+    <div class="py-4 px-6">
+
+      <template x-if="screen === 'start'">
+        <div class="text-center">
+          <button @click="startQuiz()"
+            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Je commence</button>
+        </div>
+      </template>
+
+      <template x-if="screen === 'quiz'">
+        <div>
+          <h3 class="text-lg mb-4" x-text="currentQuestion.question"></h3>
+          <div class="space-y-2">
+            <template x-for="(answer, index) in currentQuestion.choices">
+              <button :class="buttonClass(index)" @click="answerQuestion(index)" :disabled="answered"
+                x-text="answer"></button>
+            </template>
+          </div>
+        </div>
+      </template>
+
+      <template x-if="screen === 'end'">
+        <div class="text-center">
+          <h2 class="text-lg mb-6">Score final : <span x-text="score"></span> / 20</h2>
+          <p x-show="score < 5">😞 Oh non! tu peux faire mieux. tu as suremet besoin de plus de connaisances</p>
+          <p x-show="score >= 5 && score < 10">🙂 Pas mal, mais il y a encore des choses à apprendre. Continue à
+            étudier!</p>
+          <p x-show="score >= 8 && score < 15">😀 Bravo! Bon score! tu est sur la bonne voie.</p>
+          <p x-show="score >= 12 && launchConfetti()">🎉 Félicitations! tu est un expert en informatique!</p>
+        </div>
+      </template>
+
+    </div>
+  </div>
+
+  <script>
+    const yourQuestionsData = [
+      {
+        question: "Quel langage de programmation a été créé par Dennis Ritchie en 1972?",
+        choices: ["COBOL", "C", "Python", "Langage des Schtroumpfs"],
+        correctAnswerIndex: 1,
+      },
+      {
+        question: "Quel est le nom du premier ordinateur électronique, construit en 1946?",
+        choices: ["ENIAC", "EDVAC", "UNIVAC", "Terminator"],
+        correctAnswerIndex: 0,
+      },
+      {
+        question: "Qu'est-ce que l'algorithme de recherche Google?",
+        choices: ["PageRank", "GoogleBot", "Bing", "Jus de cerveau"],
+        correctAnswerIndex: 0,
+      },
+      {
+        question: "Quel langage de programmation a été créé par Yukihiro Matsumoto?",
+        choices: ["Ruby", "JavaScript", "Python", "Java"],
+        correctAnswerIndex: 0,
+      },
+      {
+        question: "Quel système d'exploitation a été développé par Linus Torvalds?",
+        choices: ["Windows", "macOS", "Android", "Linux"],
+        correctAnswerIndex: 3,
+      },
+      {
+        question: "Quel est le protocole utilisé pour transférer des fichiers sur le web?",
+        choices: ["HTTP", "FTP", "SMTP", "Protocole de transfert de pizzas"],
+        correctAnswerIndex: 1,
+      },
+      {
+        question: "Quelle est la principale utilisation du langage de programmation SQL?",
+        choices: ["Gestion de base de données", "Développement web", "Calcul scientifique", "Rédaction de romans"],
+        correctAnswerIndex: 0,
+      },
+      {
+        question: "Quelle entreprise a développé le langage de programmation Java?",
+        choices: ["Microsoft", "Apple", "Sun Microsystems", "Pieds Nickelés Inc."],
+        correctAnswerIndex: 2,
+      },
+      {
+        question: "Quelle est la principale différence entre IPv4 et IPv6?",
+        choices: ["Taille de l'adresse IP", "Vitesse de connexion", "Sécurité", "Goût de la pizza"],
+        correctAnswerIndex: 0,
+      },
+      {
+        question: "Quel est le nom du superordinateur développé par IBM qui a joué au jeu 'Jeopardy!'?",
+        choices: ["Deep Blue", "Watson", "AlphaGo", "Super Skynet"],
+        correctAnswerIndex: 1,
+      },
+      {
+        question: "Quelle est la principale utilisation du langage de programmation R?",
+        choices: ["Développement web", "Calcul scientifique", "Intelligence artificielle", "Création de memes"],
+        correctAnswerIndex: 1,
+      },
+      {
+        question: "Quel est le nom du langage de balisage utilisé pour structurer le contenu d'une page web?",
+        choices: ["HTML", "CSS", "JavaScript", "Gâteau au chocolat"],
+        correctAnswerIndex: 0,
+      },
+      {
+        question: "Quel est le nom de l'unité de mesure de la capacité de stockage des disques durs?",
+        choices: ["Byte", "Bit", "Nibble", "Croissant"],
+        correctAnswerIndex: 0,
+      },
+      {
+        question: "Quelle technologie est utilisée pour créer des images 3D dans les navigateurs web?",
+        choices: ["WebGL", "HTML5", "CSS3", "Peinture à l'huile"],
+        correctAnswerIndex: 0,
+      },
+      {
+        question: "Quel est le nom de l'inventeur de la machine à écrire?",
+        choices: ["Christopher Latham Sholes", "Charles Babbage", "Herman Hollerith", "Chapelier Fou"],
+        correctAnswerIndex: 0,
+      },
+      {
+        question: "Quelle est la vitesse de la lumière dans la fibre optique?",
+        choices: ["300 000 km/s", "225 000 km/s", "200 000 km/s", "1 escargot/s"],
+        correctAnswerIndex: 1,
+      },
+      {
+        question: "Quel est le nom du format d'image sans perte de qualité?",
+        choices: ["JPEG", "GIF", "PNG", "Format dinosaure"],
+        correctAnswerIndex: 2,
+      },
+      {
+        question: "Quel est le nom du célèbre test d'intelligence artificielle proposé par Alan Turing?",
+        choices: ["Le test de Turing", "Le test de Farnsworth", "Le test de Voight-Kampff", "Le test des petits pois"],
+        correctAnswerIndex: 0,
+      },
+      {
+        question: "Quel est le nom du réseau de neurones développé par Google pour la reconnaissance d'image?",
+        choices: ["Inception", "ResNet", "VGG", "PicassoNet"],
+        correctAnswerIndex: 0,
+      },
+      {
+        question: "Qui est le fondateur de l'entreprise SpaceX?",
+        choices: ["Jeff Bezos", "Richard Branson", "Elon Musk", "Buzz l'Éclair"],
+        correctAnswerIndex: 2,
+      }
+    ];
+
+    function quizApp() {
+      return {
+        screen: 'start',
+        questions: [],
+        currentQuestionIndex: 0,
+        score: 0,
+        answered: false,
+        userAnswerIndex: null,
+        init() {
+          this.questions = yourQuestionsData; // Ensure that your questions data is linked properly
+        },
+        startQuiz() {
+          this.screen = 'quiz';
+        },
+        get currentQuestion() {
+          return this.questions[this.currentQuestionIndex];
+        },
+        buttonClass(index) {
+          if (!this.answered) {
+            return 'w-full bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow';
+          }
+          if (index === this.currentQuestion.correctAnswerIndex) {
+            return 'w-full bg-green-500 text-white font-semibold py-2 px-4 border border-gray-400 rounded shadow';
+          }
+          if (index === this.userAnswerIndex) {
+            return 'w-full bg-red-500 text-white font-semibold py-2 px-4 border border-gray-400 rounded shadow';
+          }
+          return 'w-full bg-white text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow';
+        },
+        answerQuestion(answerIndex) {
+          if (this.answered) return;
+          this.answered = true;
+          this.userAnswerIndex = answerIndex;
+          if (answerIndex === this.currentQuestion.correctAnswerIndex) {
+            this.score += 1;
+          }
+          setTimeout(() => {
+            this.answered = false;
+            this.userAnswerIndex = null;
+            this.currentQuestionIndex += 1;
+            if (this.currentQuestionIndex >= this.questions.length) {
+              this.screen = 'end';
+            }
+          }, 1000);
+        },
+        launchConfetti() {
+          var myConfetti = confetti.create(document.getElementById('confetti-canvas'), {
+            resize: true,
+            useWorker: true
+          });
+          myConfetti({
+            particleCount: 100,
+            spread: 160
+          });
+          return true;
+        },
+      };
+    }
+  </script>
+</body>
+
+</html>
