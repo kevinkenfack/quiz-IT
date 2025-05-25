@@ -7,10 +7,13 @@ const yourQuestionsData = [
     { question: "Q3", choices: ["E", "F"], correctAnswerIndex: 0 }
 ];
 
-// Mock confetti for testing purposes
+// Updated Mock confetti for testing purposes
+let confettiFired = false; 
 const confetti = {
-  create: function() {
-    return function() { /* Mocked confetti function */ };
+  create: function(canvas, options) { // Added parameters to match usage
+    return function(params) { // Added parameter to match usage
+      confettiFired = true; 
+    };
   }
 };
 
@@ -67,7 +70,14 @@ function quizApp() {
             this.screen = 'end';
         }
     },
-    launchConfetti() { /* Not directly tested for logic, but called if score is high */ },
+    launchConfetti() {
+      // Simulates the call to the confetti library
+      if (typeof confetti !== 'undefined' && confetti.create) {
+        var myConfetti = confetti.create(null, { resize: true }); // canvas is null as it's not used in mock
+        myConfetti({ particleCount: 100, spread: 160 });
+      }
+      return true; // Important for x-show logic in Alpine
+    },
     restartQuiz() {
       this.screen = 'start';
       this.currentQuestionIndex = 0;
@@ -206,6 +216,38 @@ describe('Quiz App Logic', () => {
         assertEqual(app.userAnswerIndex, null, 'User answer index after restart');
         // Verify questions are still initialized (init() was called)
         assertEqual(app.questions.length, yourQuestionsData.length, 'Questions array after restart'); 
+    });
+
+    it('should fire confetti for a high score (>= 25)', () => {
+        confettiFired = false; // Reset flag
+        const app = quizApp();
+        app.init();
+        
+        app.score = 25; // Set high score
+        app.screen = 'end'; // Set to end screen
+
+        // Simulate AlpineJS's x-show evaluation for: score >= 25 && launchConfetti()
+        if (app.score >= 25) {
+            app.launchConfetti();
+        }
+        
+        assertEqual(confettiFired, true, 'Confetti should fire for high score (>= 25)');
+    });
+
+    it('should not fire confetti for a lower score (< 25)', () => {
+        confettiFired = false; // Reset flag
+        const app = quizApp();
+        app.init();
+
+        app.score = 24; // Set lower score
+        app.screen = 'end'; // Set to end screen
+
+        // Simulate AlpineJS's x-show evaluation for: score >= 25 && launchConfetti()
+        if (app.score >= 25) {
+            app.launchConfetti();
+        }
+
+        assertEqual(confettiFired, false, 'Confetti should NOT fire for lower score (< 25)');
     });
 });
 

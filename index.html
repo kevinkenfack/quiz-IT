@@ -63,12 +63,12 @@
 
       <template x-if="screen === 'end'">
         <div class="text-center">
-          <h2 class="text-xl mb-6">Score final : <span x-text="score"></span> / 20</h2>
-          <p x-show="score < 5">😞 Oh non! Tu peux faire mieux. Tu as sûrement besoin de plus de connaissances.</p>
-          <p x-show="score >= 5 && score < 10">🙂 Pas mal, mais il y a encore des choses à apprendre. Continue à
+          <h2 class="text-xl mb-6">Score final : <span x-text="score"></span> / <span x-text="questions.length"></span></h2>
+          <p x-show="score < 9">😞 Oh non! Tu peux faire mieux. Tu as sûrement besoin de plus de connaissances.</p>
+          <p x-show="score >= 9 && score < 18">🙂 Pas mal, mais il y a encore des choses à apprendre. Continue à
             étudier!</p>
-          <p x-show="score >= 8 && score < 15">😀 Bravo! Bon score! Tu es sur la bonne voie.</p>
-          <p x-show="score >= 12 && launchConfetti()">🎉 Félicitations! Tu es un expert en informatique!</p>
+          <p x-show="score >= 18 && score < 25">😀 Bravo! Bon score! Tu es sur la bonne voie.</p>
+          <p x-show="score >= 25 && launchConfetti()">🎉 Félicitations! Tu es un expert en informatique!</p>
           <button @click="restartQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 transition-colors duration-150 ease-in-out">Recommencer le quiz</button>
         </div>
       </template>
