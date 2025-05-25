@@ -45,7 +45,7 @@
       <template x-if="screen === 'start'">
         <div class="text-center">
           <button @click="startQuiz()"
-            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Je commence</button>
+            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-150 ease-in-out">Je commence</button>
         </div>
       </template>
 
@@ -69,6 +69,7 @@
             étudier!</p>
           <p x-show="score >= 8 && score < 15">😀 Bravo! Bon score! Tu es sur la bonne voie.</p>
           <p x-show="score >= 12 && launchConfetti()">🎉 Félicitations! Tu es un expert en informatique!</p>
+          <button @click="restartQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 transition-colors duration-150 ease-in-out">Recommencer le quiz</button>
         </div>
       </template>
 
@@ -176,6 +177,56 @@
         question: "Qui est le fondateur de l'entreprise SpaceX?",
         choices: ["Jeff Bezos", "Richard Branson", "Elon Musk", "Buzz l'Éclair"],
         correctAnswerIndex: 2,
+      },
+      {
+        question: "Quel protocole est utilisé pour sécuriser les communications sur le Web ?",
+        choices: ["HTTP", "HTTPS", "FTP", "SMTP"],
+        correctAnswerIndex: 1,
+      },
+      {
+        question: "Lequel des suivants est un exemple de système de gestion de versions décentralisé ?",
+        choices: ["SVN", "CVS", "Git", "Mercurial"],
+        correctAnswerIndex: 2,
+      },
+      {
+        question: "Quel terme désigne un ensemble de règles permettant à des ordinateurs de communiquer sur un réseau ?",
+        choices: ["API", "Protocole", "Framework", "Syntaxe"],
+        correctAnswerIndex: 1,
+      },
+      {
+        question: "Quel type de logiciel malveillant se propage en se répliquant sur d'autres ordinateurs ou réseaux ?",
+        choices: ["Virus", "Cheval de Troie", "Ver", "Ransomware"],
+        correctAnswerIndex: 2,
+      },
+      {
+        question: "En programmation orientée objet, quel concept permet à une classe d'hériter des propriétés et méthodes d'une autre classe ?",
+        choices: ["Encapsulation", "Polymorphisme", "Héritage", "Abstraction"],
+        correctAnswerIndex: 2,
+      },
+      {
+        question: "Quelle entreprise a initialement développé le framework JavaScript Angular ?",
+        choices: ["Facebook", "Google", "Microsoft", "Twitter"],
+        correctAnswerIndex: 1,
+      },
+      {
+        question: "Quel est le nom de l'assistant virtuel développé par Apple ?",
+        choices: ["Alexa", "Cortana", "Siri", "Google Assistant"],
+        correctAnswerIndex: 2,
+      },
+      {
+        question: "Lequel de ces langages est principalement utilisé pour le développement d'applications mobiles sur iOS ?",
+        choices: ["Java", "Kotlin", "Swift", "C#"],
+        correctAnswerIndex: 2,
+      },
+      {
+        question: "Quel type de base de données stocke les données dans des tables avec des lignes et des colonnes ?",
+        choices: ["NoSQL", "Relationnelle (SQL)", "Graph", "Orientée document"],
+        correctAnswerIndex: 1,
+      },
+      {
+        question: "Que signifie l'acronyme 'CPU' en informatique ?",
+        choices: ["Central Processing Unit", "Computer Personal Unit", "Control Processing Unit", "Core Programming Unit"],
+        correctAnswerIndex: 0,
       }
     ];
 
@@ -198,15 +249,15 @@
         },
         buttonClass(index) {
           if (!this.answered) {
-            return 'w-full hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-300 rounded';
+            return 'w-full hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-300 rounded transition-colors duration-150 ease-in-out';
           }
           if (index === this.currentQuestion.correctAnswerIndex) {
-            return 'w-full bg-blue-600 text-white font-semibold py-2 px-4 border border-blue-600 rounded';
+            return 'w-full bg-blue-600 text-white font-semibold py-2 px-4 border border-blue-600 rounded transition-colors duration-150 ease-in-out';
           }
           if (index === this.userAnswerIndex) {
-            return 'w-full bg-red-500 text-white font-semibold py-2 px-4 border border-red-500 rounded';
+            return 'w-full bg-red-500 text-white font-semibold py-2 px-4 border border-red-500 rounded transition-colors duration-150 ease-in-out';
           }
-          return 'w-full bg-white text-gray-600 font-semibold py-2 px-4 border border-gray-300 rounded';
+          return 'w-full bg-white text-gray-600 font-semibold py-2 px-4 border border-gray-300 rounded transition-colors duration-150 ease-in-out';
         },
         answerQuestion(answerIndex) {
           if (this.answered) return;
@@ -236,6 +287,14 @@
           });
           return true;
         },
+        restartQuiz() {
+          this.screen = 'start';
+          this.currentQuestionIndex = 0;
+          this.score = 0;
+          this.answered = false;
+          this.userAnswerIndex = null;
+          this.init(); // Re-initialize questions
+        }
       };
     }
   </script>

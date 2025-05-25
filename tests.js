@@ -67,7 +67,15 @@ function quizApp() {
             this.screen = 'end';
         }
     },
-    launchConfetti() { /* Not directly tested for logic, but called if score is high */ }
+    launchConfetti() { /* Not directly tested for logic, but called if score is high */ },
+    restartQuiz() {
+      this.screen = 'start';
+      this.currentQuestionIndex = 0;
+      this.score = 0;
+      this.answered = false;
+      this.userAnswerIndex = null;
+      this.init(); // Re-initialize questions
+    }
   };
 }
 
@@ -176,6 +184,28 @@ describe('Quiz App Logic', () => {
 
         assertEqual(app.currentQuestionIndex, yourQuestionsData.length, 'Question index after all questions');
         assertEqual(app.screen, 'end', 'Screen after all questions answered');
+    });
+
+    it('should reset the quiz to initial state when restartQuiz is called from end screen', () => {
+        const app = quizApp();
+        app.init(); // Initial setup
+
+        // Simulate going to the end of the quiz
+        app.currentQuestionIndex = app.questions.length; // Or some other way to get to 'end' screen
+        app.screen = 'end';
+        app.score = 5; // Arbitrary score
+        app.answered = true; // State it might be in at the end
+        app.userAnswerIndex = 0; // Arbitrary state
+
+        app.restartQuiz();
+
+        assertEqual(app.screen, 'start', 'Screen after restart');
+        assertEqual(app.currentQuestionIndex, 0, 'Current question index after restart');
+        assertEqual(app.score, 0, 'Score after restart');
+        assertEqual(app.answered, false, 'Answered state after restart');
+        assertEqual(app.userAnswerIndex, null, 'User answer index after restart');
+        // Verify questions are still initialized (init() was called)
+        assertEqual(app.questions.length, yourQuestionsData.length, 'Questions array after restart'); 
     });
 });
 
